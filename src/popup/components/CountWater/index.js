@@ -16,7 +16,7 @@ const Count = () => {
   const [percent, setPercent] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     chrome.storage.sync.get(['login', 'token'], async function (items) {
       if (items.login) {
         setIsLogin(true);
@@ -65,6 +65,7 @@ const Count = () => {
       setLoading(false);
     });
   }, [isLogin, waterInDate]);
+
   const logout = async () => {
     chrome.storage.sync.set({ login: false }, function () {});
     chrome.storage.sync.set({ token: '' }, function () {});
@@ -105,6 +106,8 @@ const Count = () => {
         alert(error.message);
       }
     }
+    chrome.storage.sync.set({ timer: 90 });
+    chrome.storage.local.set({ isCountDown: true });
   };
   const submitWater = async (value) => {
     const water = value * 2 * 0.5 * 0.03 * 1000;
@@ -127,12 +130,12 @@ const Count = () => {
   };
 
   return (
-    <div className='w-full h-full overflow-hidden'>
+    <div className='w-full h-full overflow-hidden bg-[#CDB699]'>
       {loading && <div className='w-full h-full fixed inset-0 bg-loading z-[99]'>Loading.....</div>}
       <motion.div className='w-full h-full relative'>
         <Water onAddWater={addWater} waterInDate={waterInDate} percent={percent}>
-          <div className='w-[40%] h-full bg-gray-200 flex items-center justify-center relative'>
-            {isLogin ? (
+          <div className='w-[40%] h-full flex items-center justify-center relative'>
+            {/* {isLogin ? (
               <button className='w-[60px] py-[5px] border-2 border-[black] rounded-sm top-2 left-2 absolute' onClick={() => logout()}>
                 Logout
               </button>
@@ -147,7 +150,7 @@ const Count = () => {
                   </a>
                 </button>
               </div>
-            )}
+            )} */}
             <InputWater onSubmitWater={submitWater} waterInDate={waterInDate} />
           </div>
         </Water>

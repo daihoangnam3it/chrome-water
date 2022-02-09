@@ -27,11 +27,7 @@ const ItemHeatmap = ({ habit, value }) => {
         <h4>
           {value.split(' ').reverse().join(' ')} {year}
         </h4>
-        <h4>
-          {check.percent}
-          {check.water}
-          {infoUser.waterToday}
-        </h4>
+        <h4>{check.water}</h4>
       </div>
     </div>
   );

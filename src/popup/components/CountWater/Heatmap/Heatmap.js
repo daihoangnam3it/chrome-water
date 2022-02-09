@@ -11,7 +11,7 @@ const Heatmap = ({ habit }) => {
       transition={{ duration: 1 }}
       exit={{ x: '-100%' }}
       className='w-full h-full '
-      className='w-full h-[50%]  text-[5px] bg-[#fff]'
+      className='w-full h-[50%]  text-[5px] bg-[#D1D1D1]'
     >
       <div className='w-[80%] h-full grid grid-cols-6 gap-x-[5px] p-[2px] m-auto font-bold '>
         {habit.length > 0 &&
