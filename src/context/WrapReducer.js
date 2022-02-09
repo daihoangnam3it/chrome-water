@@ -8,6 +8,8 @@ export const WrapReducer = (state, action) => {
       return { ...state, bmi: action.payload };
     case COMMAND_CONTEXT.SET_TOKEN:
       return { ...state, token: action.payload };
+    case COMMAND_CONTEXT.SET_WATER:
+      return { ...state, waterToday: action.payload };
     default:
       return state;
   }

@@ -1,19 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Water from './Water/water';
+import Water from './Water/Water';
 import Heatmap from './Heatmap/Heatmap';
 import AuthApis from '../../../api/Auth';
 import { WrapContext } from '../../../context/WrapContext';
 import theDate from './Heatmap/handleDate';
+import { Link } from 'react-router-dom';
+import InputWater from './Water/InputWater';
 const initialState = [];
 const Count = () => {
   const [isLogin, setIsLogin] = useState(false);
-  const [count, setCount] = useState(0);
   const [info, setInfo] = useState({});
   const [habitClient, setHabitClient] = useState(initialState);
   const [habitCloud, setHabitCloud] = useState([]);
-  const { infoUser, setToken } = useContext(WrapContext);
-
+  const { infoUser, setToken, setWaterToday } = useContext(WrapContext);
+  const [waterInDate, setWaterInDate] = useState(0);
   useEffect(() => {
     chrome.storage.sync.get(['login', 'token'], async function (items) {
       if (items.login) {
@@ -21,19 +22,27 @@ const Count = () => {
         const result = await AuthApis.getAccessToken();
         if (result.token) {
           const infoUser = await AuthApis.getInfoUser(result.token);
+          if (infoUser.bmiId.weight) {
+            const water = infoUser.bmiId.weight * 2 * 0.5 * 0.03 * 1000;
+            setWaterToday(water);
+            setWaterInDate(water);
+          }
           const habit = await AuthApis.getHabit(result.token);
           setToken(result.token);
           setInfo(infoUser);
-          setHabitCloud(habit);
+          setHabitCloud(habit.data);
         }
       } else {
-        chrome.storage.sync.get(['data'], async function (items) {
+        chrome.storage.sync.get(['data', 'waterInDate'], async function (items) {
           if (!items.data) {
             chrome.storage.sync.set({ data: [{ process: true, water: 0, date: theDate.getDate() }] }, function () {
               setHabitClient([{ process: true, water: 0, date: theDate.getDate() }]);
             });
           } else {
             setHabitClient(items.data);
+          }
+          if (items.waterInDate) {
+            setWaterInDate(items.waterInDate);
           }
         });
       }
@@ -45,7 +54,7 @@ const Count = () => {
     setIsLogin(false);
     await AuthApis.logout(infoUser.token);
   };
-  const addWater = (value) => {
+  const addWater = async (value) => {
     let currentWater;
     if (!isLogin) {
       currentWater = [...habitClient];
@@ -60,9 +69,36 @@ const Count = () => {
         setHabitClient(currentWater);
       }
     } else {
-      currentWater = habitCloud.data;
+      const object = {
+        process: true,
+        water: value,
+      };
+      try {
+        await AuthApis.addHabit(infoUser.token, object);
+        const habit = await AuthApis.getHabit(infoUser.token);
+        setHabitCloud(habit.data);
+      } catch (error) {
+        alert(error.message);
+      }
     }
   };
+  const submitWater = async (value) => {
+    const water = value * 2 * 0.5 * 0.03 * 1000;
+    if (isLogin) {
+      if (!waterInDate) {
+        await AuthApis.createBMIWater(infoUser.token, value);
+      } else {
+        await AuthApis.updateBMIWater(infoUser.token, value);
+      }
+      setWaterToday(water);
+      setWaterInDate(water);
+      return;
+    }
+    setWaterToday(water);
+    setWaterInDate(water);
+    chrome.storage.sync.set({ waterInDate: water });
+  };
+
   return (
     <div className='w-full h-full overflow-hidden'>
       <motion.div
@@ -72,36 +108,27 @@ const Count = () => {
         exit={{ x: '-100%' }}
         className='w-full h-full '
       >
-        {count}
-        <button onClick={() => console.log(habitClient)}>check</button>
-        <Water>
-          <div className='w-full h-[70%] flex items-center justify-center gap-[5px]'>
-            <div className='w-[50%] h-full flex justify-end items-center'>
-              <div className='w-[100px] h-[90%] flex justify-center items-center bg-white border-2 border-current rounded-b-3xl'>
-                <h4>2L</h4>
-              </div>
-            </div>
-            <div className='w-[50%] h-full flex flex-col items-start justify-center gap-y-[5px] text-[10px]'>
-              <div className='h-[20%] flex items-center gap-x-[5px] '>
-                <div
-                  onClick={() => addWater(100)}
-                  className='cup w-[25px] h-full rounded-b-[.4rem] rounded-t-sm border-2 border-current cursor-pointer'
-                ></div>
-                <span>100ml</span>
-              </div>
-              <div className='h-[20%] flex items-center gap-x-[5px] '>
-                <div className='cup w-[25px] h-full rounded-b-[.4rem] rounded-t-sm border-2 border-current cursor-pointer'></div>
-                <span>200ml</span>
-              </div>
-              <div className='h-[20%] flex items-center gap-x-[5px] '>
-                <div className='cup w-[25px] h-full rounded-b-[.4rem] rounded-t-sm border-2 border-current cursor-pointer'></div>
-                <span>300ml</span>
-              </div>
-            </div>
+        {isLogin ? (
+          <button onClick={() => logout()}>Logout</button>
+        ) : (
+          <div>
+            <button>
+              <Link to={'login'}>Login</Link>
+            </button>
+            <button>
+              <a href='https://daihoang.space' target={'_blank'} rel='noopener noreferrer'>
+                Register
+              </a>
+            </button>
           </div>
-          <div className='w-full h-[30%] bg-pink-200'></div>
+        )}
+
+        <Water onAddWater={addWater} waterInDate={waterInDate}>
+          <div className='w-[40%] h-full bg-gray-200 flex items-center justify-center'>
+            <InputWater onSubmitWater={submitWater} waterInDate={waterInDate} />
+          </div>
         </Water>
-        {/* {isLogin && <Heatmap habit={habitCloud && habitCloud.data} />} */}
+        {isLogin && <Heatmap habit={habitCloud && habitCloud} />}
         {!isLogin && <Heatmap habit={habitClient} />}
       </motion.div>
     </div>

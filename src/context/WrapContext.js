@@ -7,6 +7,7 @@ const initialState = {
   bmi: {},
   habit: [],
   token: '',
+  waterToday: 0,
 };
 const WrapContextProvider = ({ children }) => {
   const [infoUser, dispatch] = useReducer(WrapReducer, initialState);
@@ -16,12 +17,14 @@ const WrapContextProvider = ({ children }) => {
   const setBMI = (content) => dispatch({ type: COMMAND_CONTEXT.SET_BMI, payload: content });
   const setHabit = (content) => dispatch({ type: COMMAND_CONTEXT.SET_HABIT, payload: content });
   const setToken = (content) => dispatch({ type: COMMAND_CONTEXT.SET_TOKEN, payload: content });
+  const setWaterToday = (value) => dispatch({ type: COMMAND_CONTEXT.SET_WATER, payload: value });
   const infoContext = {
     infoUser,
     getContext,
     setHabit,
     setBMI,
     setToken,
+    setWaterToday,
   };
   return <WrapContext.Provider value={infoContext}>{children}</WrapContext.Provider>;
 };

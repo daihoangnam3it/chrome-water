@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import theDate from './handleDate';
 const ItemHeatmap = ({ habit, value, count }) => {
-  const [date, setDate] = useState();
+  const [year, setYear] = useState();
   const [check, setCheck] = useState({ process: false, date: '0Jan2022', water: 0 });
-  const [dataHabit, setDataHabit] = useState(habit);
   useEffect(() => {
     const current = new Date();
-    const key = value + current.getFullYear();
-    setDate(key);
+    const key = value.split(' ').join('') + current.getFullYear();
+    setYear(current.getFullYear());
     const result = habit.find((el) => el.date === key);
     if (result) {
       setCheck({ ...result });
@@ -16,9 +16,14 @@ const ItemHeatmap = ({ habit, value, count }) => {
   return (
     <div
       onClick={() => console.log(check)}
-      className={`w-[10px] h-[10px] hover:bg-red-200 ${check.process ? 'bg-red-700' : 'bg-gray-300'}`}
+      className={`item-heat w-[12px] h-[12px] hover:bg-red-200 ${check.process ? 'bg-red-700' : 'bg-non-heat'} relative`}
     >
-      {check.water}
+      <div className='detail-heat invisible w-[100px] h-fit py-[5px] bg-black rounded-[2px] absolute bottom-[200%] left-[-30px] z-50 text-white text-center '>
+        <h4>
+          {value.split(' ').reverse().join(' ')} {year}
+        </h4>
+        <h4>{check.water}</h4>
+      </div>
     </div>
   );
 };

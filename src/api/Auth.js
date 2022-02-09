@@ -79,5 +79,62 @@ const AuthApis = {
       throw error;
     }
   },
+  addHabit: async (token, value) => {
+    try {
+      const result = await fetch(`${uri}/users/habit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify(value),
+      }).then((data) => data.json());
+      const { data } = result;
+      if (!data) throw new Error(result.message);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  createBMIWater: async (token, value) => {
+    const content = {
+      weight: value,
+    };
+    try {
+      const result = await fetch(`${uri}/users/create-bmi`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify(content),
+      }).then((data) => data.json());
+      const { data } = result;
+      if (!data) throw new Error(result.message);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  updateBMIWater: async (token, value) => {
+    const content = {
+      weight: value,
+    };
+    try {
+      const result = await fetch(`${uri}/users/update-bmi`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify(content),
+      }).then((data) => data.json());
+      const { data } = result;
+      if (!data) throw new Error(result.message);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 export default AuthApis;
