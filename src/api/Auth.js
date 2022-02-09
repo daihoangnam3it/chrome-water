@@ -1,4 +1,4 @@
-const uri = 'http://localhost:8000/api';
+const uri = 'https://hodathefood.vercel.app/api';
 
 const AuthApis = {
   login: async (content) => {
