@@ -1,0 +1,5 @@
+export const COMMAND_CONTEXT = {
+  SET_BMI: 'SET_BMI',
+  SET_HABIT: 'SET_HABIT',
+  SET_TOKEN:'SET_TOKEN'
+};
