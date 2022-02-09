@@ -111,6 +111,7 @@ const AuthApis = {
       }).then((data) => data.json());
       const { data } = result;
       if (!data) throw new Error(result.message);
+      alert('send');
       return data;
     } catch (error) {
       throw error;

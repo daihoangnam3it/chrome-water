@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DateTime from './handleDate';
 import ItemHeatmap from './ItemHeatmap';
 import { motion } from 'framer-motion';
-const Heatmap = ({ habit }) => {
+const Heatmap = ({ habit ,waterInDate}) => {
   const [dataHabit, setDataHabit] = useState([]);
   useEffect(() => {
     // console.log(habit);
@@ -25,7 +25,7 @@ const Heatmap = ({ habit }) => {
                 {month}
                 <div className='m-auto w-full h-fit flex items-center justify-start gap-[1px] flex-wrap '>
                   {Array.from(Array(DateTime.datesInMonth[index]), (e, i) => {
-                    return <ItemHeatmap habit={habit} key={i} value={(i + 1).toString() + ' ' + month.toString()} />;
+                    return <ItemHeatmap habit={habit} key={i} value={(i + 1).toString() + ' ' + month.toString()} waterInDate={waterInDate} />;
                   })}
                 </div>
               </div>

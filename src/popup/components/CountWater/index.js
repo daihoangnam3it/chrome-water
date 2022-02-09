@@ -15,6 +15,7 @@ const Count = () => {
   const [habitCloud, setHabitCloud] = useState([]);
   const { infoUser, setToken, setWaterToday } = useContext(WrapContext);
   const [waterInDate, setWaterInDate] = useState(0);
+  const [percent, setPercent] = useState(0);
   useEffect(() => {
     chrome.storage.sync.get(['login', 'token'], async function (items) {
       if (items.login) {
@@ -22,12 +23,20 @@ const Count = () => {
         const result = await AuthApis.getAccessToken();
         if (result.token) {
           const infoUser = await AuthApis.getInfoUser(result.token);
-          if (infoUser.bmiId.weight) {
+          if (infoUser.bmiId && infoUser.bmiId.weight) {
             const water = infoUser.bmiId.weight * 2 * 0.5 * 0.03 * 1000;
             setWaterToday(water);
             setWaterInDate(water);
           }
           const habit = await AuthApis.getHabit(result.token);
+          if (habit.data[habit.data.length - 1].date === theDate.getDate()) {
+            if (infoUser.bmiId && infoUser.bmiId.weight) {
+              const water = infoUser.bmiId.weight * 2 * 0.5 * 0.03 * 1000;
+              const percent = calculate(habit.data[habit.data.length - 1].water, water);
+
+              setPercent(percent);
+            }
+          }
           setToken(result.token);
           setInfo(infoUser);
           setHabitCloud(habit.data);
@@ -37,12 +46,20 @@ const Count = () => {
           if (!items.data) {
             chrome.storage.sync.set({ data: [{ process: true, water: 0, date: theDate.getDate() }] }, function () {
               setHabitClient([{ process: true, water: 0, date: theDate.getDate() }]);
+              setPercent(0);
             });
           } else {
             setHabitClient(items.data);
+            if (items.data[items.data.length - 1].date === theDate.getDate()) {
+              if (items.waterInDate) {
+                const percent = calculate(items.data[items.data.length - 1].water, items.waterInDate);
+                setPercent(percent);
+              }
+            }
           }
           if (items.waterInDate) {
             setWaterInDate(items.waterInDate);
+            setWaterToday(items.waterInDate);
           }
         });
       }
@@ -52,6 +69,9 @@ const Count = () => {
     chrome.storage.sync.set({ login: false }, function () {});
     chrome.storage.sync.set({ token: '' }, function () {});
     setIsLogin(false);
+    setWaterInDate(0);
+    setPercent(0);
+    setWaterToday(0);
     await AuthApis.logout(infoUser.token);
   };
   const addWater = async (value) => {
@@ -59,23 +79,26 @@ const Count = () => {
     if (!isLogin) {
       currentWater = [...habitClient];
       if (currentWater[currentWater.length - 1].date === theDate.getDate()) {
-        currentWater[currentWater.length - 1].water += value;
+        const newValue = (currentWater[currentWater.length - 1].water += value);
+        setPercent(calculate(newValue, waterInDate));
         setHabitClient(currentWater);
         chrome.storage.sync.set({ data: currentWater });
       } else {
-        const waterToday = { process: true, water: 0, date: theDate.getDate() };
+        const waterToday = { process: true, water: value, date: theDate.getDate() };
         currentWater.push(waterToday);
         chrome.storage.sync.set({ data: currentWater });
         setHabitClient(currentWater);
       }
     } else {
       const object = {
-        process: true,
+        process: false,
         water: value,
       };
+      const newValue = (habitCloud[habitCloud.length - 1].water += value);
       try {
         await AuthApis.addHabit(infoUser.token, object);
         const habit = await AuthApis.getHabit(infoUser.token);
+        setPercent(calculate(newValue, waterInDate));
         setHabitCloud(habit.data);
       } catch (error) {
         alert(error.message);
@@ -86,6 +109,7 @@ const Count = () => {
     const water = value * 2 * 0.5 * 0.03 * 1000;
     if (isLogin) {
       if (!waterInDate) {
+        alert('no water');
         await AuthApis.createBMIWater(infoUser.token, value);
       } else {
         await AuthApis.updateBMIWater(infoUser.token, value);
@@ -98,7 +122,9 @@ const Count = () => {
     setWaterInDate(water);
     chrome.storage.sync.set({ waterInDate: water });
   };
-
+  const calculate = (current, total) => {
+    return Math.floor((current * 100) / total);
+  };
   return (
     <div className='w-full h-full overflow-hidden'>
       <motion.div
@@ -123,13 +149,13 @@ const Count = () => {
           </div>
         )}
 
-        <Water onAddWater={addWater} waterInDate={waterInDate}>
+        <Water onAddWater={addWater} waterInDate={waterInDate} percent={percent}>
           <div className='w-[40%] h-full bg-gray-200 flex items-center justify-center'>
             <InputWater onSubmitWater={submitWater} waterInDate={waterInDate} />
           </div>
         </Water>
-        {isLogin && <Heatmap habit={habitCloud && habitCloud} />}
-        {!isLogin && <Heatmap habit={habitClient} />}
+        {isLogin && <Heatmap habit={habitCloud && habitCloud} percent={percent} />}
+        {!isLogin && <Heatmap habit={habitClient} waterInDate={waterInDate} />}
       </motion.div>
     </div>
   );
