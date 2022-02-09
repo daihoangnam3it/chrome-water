@@ -18,9 +18,10 @@ const Water = ({ children, onAddWater, waterInDate, percent }) => {
               className={`w-full bg-blue-100 text-[black] flex items-center justify-center`}
               // style={{ height: `${currentPercent}%` }}
             >
-              <span className='absolute top-[50%] left-[50%] translate-x-[-50%]'>
-                {currentPercent} % | {waterInDate}
-              </span>
+              <div className='flex flex-col gap-y-[5px] absolute top-[50%] left-[50%] translate-x-[-50%] text-[5px]'>
+                <h5>{currentPercent} % </h5>
+                <h5>{waterInDate}</h5>
+              </div>
             </motion.div>
           </div>
         </div>
