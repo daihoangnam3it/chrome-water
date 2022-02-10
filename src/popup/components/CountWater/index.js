@@ -106,8 +106,8 @@ const Count = () => {
         alert(error.message);
       }
     }
-    chrome.storage.sync.set({ timer: 90 });
-    chrome.storage.local.set({ isCountDown: true });
+    chrome.storage.sync.set({ timer: 2 });
+    chrome.storage.local.set({ isCountDown: true, timer: 0, minutes: 0 });
   };
   const submitWater = async (value) => {
     const water = value * 2 * 0.5 * 0.03 * 1000;
