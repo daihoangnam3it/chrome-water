@@ -42,6 +42,7 @@ const Count = () => {
         }
       } else {
         chrome.storage.sync.get(['data', 'waterInDate'], async function (items) {
+          console.log(items.data);
           if (!items.data) {
             chrome.storage.sync.set({ data: [{ process: true, water: 0, date: theDate.getDate() }] }, function () {
               setHabitCloud([{ process: true, water: 0, date: theDate.getDate() }]);
@@ -88,6 +89,7 @@ const Count = () => {
       } else {
         const waterToday = { process: true, water: value, date: theDate.getDate() };
         currentWater.push(waterToday);
+        setPercent(calculate(value, waterInDate));
         chrome.storage.sync.set({ data: currentWater });
         setHabitCloud(currentWater);
       }
@@ -106,7 +108,7 @@ const Count = () => {
         alert(error.message);
       }
     }
-    chrome.storage.sync.set({ timer: 2 });
+    chrome.storage.sync.set({ timer: 60 });
     chrome.storage.local.set({ isCountDown: true, timer: 0, minutes: 0 });
   };
   const submitWater = async (value) => {

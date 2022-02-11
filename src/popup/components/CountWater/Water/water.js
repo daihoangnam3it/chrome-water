@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 const Water = ({ children, onAddWater, waterInDate, percent }) => {
   const [currentPercent, setCurrentPercent] = useState(percent);
+  console.log('newPercent', percent);
   useEffect(() => {
     setCurrentPercent(percent);
   }, [percent]);
